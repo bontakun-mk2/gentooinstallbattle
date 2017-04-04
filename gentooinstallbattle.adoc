@@ -110,8 +110,10 @@ Enterを押さず15秒経過するとデフォルトのブートに進んでし�
 放っておくとUS配列として認識して進んでしまうので、日本語キーボードを使用している人は
 ここで22 Enter と入力しましょう。
 
-//ここで設定を忘れてしまった場合、ログイン後に以下のコマンドで設定が可能
-//#
+ここで設定を忘れてしまった場合、ログイン後に以下のコマンドで設定が可能です。
+----
+# loadkeys jp106
+----
 
 しばらくするとブートが完了し、自動的にrootとしてログインされた状態となります。
 まずはNetの接続が正しくできているか確認しましょう。
@@ -141,11 +143,11 @@ ifconfigコマンドはobsoleteなのでip aコマンドでIPアドレスの設�
 
 eno<数字>のようになっているのがEtherのポートです。
 VM上で操作するとマウスの制御が取られたままでWebなどを見ながらの操作がやりにくいので、
-IPアドレスが確認できたあとはsshでいつもの環境から操作することにする。
+IPアドレスが確認できたあとはsshでいつもの環境から操作します。
 
 sshで接続するためにはまずrootのパスワードを設定する必要があります。
 ちなみにここで設定するパスワードは一時的に使用されるもので、
-インストールするOSにはまた後ほど設定する必要がある。
+インストールするOSにはまた後ほど設定する必要があります。
 ----
 # passwd
 New password: <hogehuga>
@@ -156,22 +158,25 @@ passwd: password updated successfully
 ----
 # /etc/init.d/sshd start
 ----
-ここまで出来たらVMからフォーカスを外してTeraTermなりLinuxからsshする。
+ここまで出来たらVMからフォーカスを外してTeraTermなりLinuxからsshします。
 VMからフォーカスを外す方法はCtrl+Alt同時押し。
 ip aコマンドで確認した確認したIPアドレスにsshします。
-IDはroot、Passwordは上記で設定した<hogehuga>となる。
+IDはroot、Passwordは上記で設定した<hogehuga>となります。
+TeraTermを使っている場合、プレインパスワードではなくチャレンジレスポンス認証を使用しないと接続できないので注意しましょう。
+
+//loadkeysのことを再度説明
 
 == パーティション分け
-パーティションを設定する際に、まず最初にMBR、GPTどちらを使うか選択する必要がある。
+パーティションを設定する際に、まず最初にMBR、GPTどちらを使うか選択する必要があります。
 GPTのほうが新しく、2T以上のパーディション作成やUEFIブートをするためにはGPTが必要となる。
 通常はGPTで問題ないでしょう。
 
-Gentooハンドブックとは異なり下記構成のパーティションを作成する。
+Gentooハンドブックとは異なり下記構成のパーティションを作成します。
 1つ目のパーティションはブートローダー用で、
 GPTでgrubを使用する場合、先頭に"BIOS boot partition"というフラグを立てる必要がある。
 2つ目のパーティションはブート用の領域で、カーネルイメージなどが格納される。
 ハンドブックでは128MBだが、安全のため古いカーネルを残しておくと
-すぐ溢れてしまうため256Mとしている。
+すぐ溢れてしまうため256Mとしています。
 3つ目のパーティションはルート用であり、残り全ての容量を割り当てる。
 今回はVMでHDDの追加なども容易であるので以下のようにしているが、
 物理環境では/homeを別パーティションにするなど検討したほうが良いと思う。
@@ -180,7 +185,7 @@ Swapパーティションが無いことに疑問を持つかもしれないが�
 Swapはファイルを使用しても性能に特に差はなく(btrfsを使用する場合を除く)、
 VMの場合HDDの使用容量が固定されないファイルのほうが適していると思い以下のようにしている。
 Swapファイルの設定方法は後ろのほうで説明するが、
-メモリ容量の少ない環境の場合はパーティション作成後に実施したほうが良いかもしれない。
+メモリ容量の少ない環境の場合はパーティション作成後に実施したほうが良いかもしれません。
 
 ----
 Partition	Filesystem	Size		Description
@@ -191,15 +196,15 @@ Partition	Filesystem	Size		Description
 
 GPTの操作としてGentoo Handbookではpartedの使用例が記載されているが、
 partedは操作が即時反映されてしまったり、容量を指定した
-パーティション作成ができないなどの問題がある。
+パーティション作成ができないなどの問題があります。
 そこで、ここではgdiskというGPT用のパーティショニングツールを使用する。
 ちなみに、以前はfdiskはGPT対応していなかったが、現在では問題なく使用できるので
-fdiskに慣れている人はそちらを使用しても問題ない。
+fdiskに慣れている人はそちらを使用しても問題ありません。
 
 #gdisk <デバイス名>で起動する。
 ----
 livecd ~ # gdisk /dev/sda
-GPT fdisk (gdisk) version 0.8.10
+GPT fdisk (gdisk) version 1.0.1
 
 Partition table scan:
 MBR: not present
@@ -337,7 +342,7 @@ The operation has completed successfully.
 下記コマンドで現在のHDD情報が確認できます。
 ----
 livecd ~ # gdisk -l /dev/sda
-GPT fdisk (gdisk) version 0.8.10
+GPT fdisk (gdisk) version 1.0.1
 
 Partition table scan:
 MBR: protective
@@ -360,53 +365,7 @@ Number  Start (sector)    End (sector)  Size       Code  Name
 3          530432        16777182   7.7 GiB     8300  Linux filesystem
 ----
 
-<<<
-----
-***old
 
-MBRでは従来fdiskコマンドを使用していたが、
-GPTでフォーマットする場合partedコマンドを使用する
-
-# parted -a optimal /dev/sda
--a optimalオプションはパーティション分割の際のアライメントを適切に設定してくれるもの
-
-livecd ~ # parted -a optimal /dev/sda
-GNU Parted 3.2
-Using /dev/sda
-Welcome to GNU Parted! Type 'help' to view a list of commands.
-(parted) 
- 
-ここでhelpと打てばコマンドの一覧が表示される
-またprintと打てば現在のパーティション情報が表示される
-
-まずはHDDにGPTであることを設定する
-この操作を行うことで既存のデータは全て消えてしまうので
-もし既存の環境に対して行う場合は注意が必要である
-
-(parted) mklabel gpt
-
-次にBIOS boot partitionを作成する
-まず、以下のコマンドで容量の操作単位をMiB(メビバイト)にする
-(parted) unit mib
-以下の操作で2Mのパーティションを作成する
-これはHDD先頭から数えて1MiB〜3MiB(2MiB分)の区間を1パーティションにするという意味になる
-(parted) mkpart primary 1 3
-作成したパーティションにgrubという名前をつけて、bios_grubオプションを立てる
-GPTパーティションでgrubを使うにはこのbios_grubオプションが必要になるようだ
-(parted) name 1 grub
-(parted) set 1 bios_grub on
-(parted) print
-Model: VMware, VMware Virtual S (scsi)
-Disk /dev/sda: 20480MiB
-Sector size (logical/physical): 512B/512B
-Partition Table: gpt
-Disk Flags:
-
-Number  Start    End      Size     File system  Name  Flags
-1      1.00MiB  3.00MiB  2.00MiB               grub  bios_grub
-
-***
-----
 <<<
 
 
@@ -415,7 +374,7 @@ Number  Start    End      Size     File system  Name  Flags
 
 ----
 livecd ~ # mkfs.ext2 /dev/sda2
-mke2fs 1.42.13 (17-May-2015)
+mke2fs 1.43.3 (04-Sep-2016)
 Creating filesystem with 262144 1k blocks and 65536 inodes
 Filesystem UUID: 7197f997-5c15-4c44-b5d6-e060b4206bc3
 Superblock backups stored on blocks:
@@ -427,7 +386,7 @@ Writing superblocks and filesystem accounting information: done
 ----
 ----
 livecd ~ # mkfs.ext4 /dev/sda3
-mke2fs 1.42.13 (17-May-2015)
+mke2fs 1.43.3 (04-Sep-2016)
 Creating filesystem with 2030843 4k blocks and 507904 inodes
 Filesystem UUID: 47687742-0e76-443d-94c2-941e852bb12b
 Superblock backups stored on blocks:
@@ -444,10 +403,10 @@ Writing superblocks and filesystem accounting information: done
 インストールを始める前に、日時が正しいか確認する
 ----
 livecd ~ # date
-Sat Dec 26 11:40:26 UTC 2015
+Tue Apr  4 23:40:26 UTC 2017
 ----
 VMで構築している場合、時刻はあっているように見えても実はUCT時間なので異なっている。
-時刻を合わせる手っ取り早い方法は下記コマンドでNTPを使用することである。
+時刻を合わせる手っ取り早い方法は下記コマンドでNTPを使用することです。
 ----
 # ntpdate ntp.nict.jp
 ----
@@ -483,39 +442,39 @@ livecd ~ # links http://ftp.jaist.ac.jp/pub/Linux/Gentoo/releases/amd64/autobuil
 
 ファイル名がわかっている場合、以下のように直接ファイルを確認・指定してダウンロードする方法もある。
 ----
-livecd gentoo # wget http://ftp.jaist.ac.jp/pub/Linux/Gentoo/releases/amd64/autobuilds/current-stage3-amd64/stage3-amd64-20151227.tar.bz2
+livecd gentoo # wget http://ftp.jaist.ac.jp/pub/Linux/Gentoo/releases/amd64/autobuilds/current-stage3-amd64/stage3-amd64-20170316.tar.bz2
 
---2015-12-30 00:23:41--  http://ftp.jaist.ac.jp/pub/Linux/Gentoo/releases/amd64/autobuilds/current-stage3-amd64/stage3-amd64-20151227.tar.bz2
+--2017-04-05 00:23:41--  http://ftp.jaist.ac.jp/pub/Linux/Gentoo/releases/amd64/autobuilds/current-stage3-amd64/stage3-amd64-20170316.tar.bz2
 Resolving ftp.jaist.ac.jp... 150.65.7.130, 2001:df0:2ed:feed::feed
 Connecting to ftp.jaist.ac.jp|150.65.7.130|:80... connected.
 HTTP request sent, awaiting response... 200 OK
 Length: 249998079 (238M) [application/x-bzip2]
-Saving to: 'stage3-amd64-20151227.tar.bz2'
+Saving to: 'stage3-amd64-20170316.tar.bz2'
 
-stage3-amd64-20151227.tar 100%[=======================================>] 238.42M  3.08MB/s   in 79s
+stage3-amd64-20170316.tar 100%[=======================================>] 238.42M  3.08MB/s   in 79s
 
-2015-12-30 00:25:00 (3.02 MB/s) - 'stage3-amd64-20151227.tar.bz2' saved [249998079/249998079]
+2017-04-05 00:25:00 (3.02 MB/s) - 'stage3-amd64-20170316.tar.bz2' saved [249998079/249998079]
 ----
 
 ダウンロードしたファイルが壊れていないかどうかを確認するためには、以下のファイルもダウンロードしてください。
 ----
-stage3-amd64-20151227.tar.bz2.DIGESTS
+stage3-amd64-20170316.tar.bz2.DIGESTS
 ----
 このファイルにはstage3とstage3のCONTENTS(ファイルの内容一覧)のチェックサムが記載されています。
 以下のコマンドでSHA512を計算することができますが、この長い数列を目視で確認するのは大変です。
 ----
-livecd gentoo # sha512sum stage3-amd64-20151227.tar.bz2
-b4708fbdc6acff3276dcc89c063a9bbed142b98eddfba2637b47f5fa73e93d6ce9c1f1015a824d4910852f338e6e0e488ac336ad1005526e6195f068f63dc495  stage3-amd64-20151227.tar.bz2
+livecd gentoo # sha512sum stage3-amd64-20170316.tar.bz2
+b4708fbdc6acff3276dcc89c063a9bbed142b98eddfba2637b47f5fa73e93d6ce9c1f1015a824d4910852f338e6e0e488ac336ad1005526e6195f068f63dc495  stage3-amd64-20170316.tar.bz2
 ----
 以下のコマンドを実行すると、SHA512を計算して一致したか結果を表示してくれます。
 ----
-livecd gentoo # sha512sum -c stage3-amd64-20151227.tar.bz2.DIGESTS
-stage3-amd64-20151227.tar.bz2: OK
-stage3-amd64-20151227.tar.bz2: FAILED
-sha512sum: stage3-amd64-20151227.tar.bz2.CONTENTS: No such file or directory
-stage3-amd64-20151227.tar.bz2.CONTENTS: FAILED open or read
-sha512sum: stage3-amd64-20151227.tar.bz2.CONTENTS: No such file or directory
-stage3-amd64-20151227.tar.bz2.CONTENTS: FAILED open or read
+livecd gentoo # sha512sum -c stage3-amd64-20170316.tar.bz2.DIGESTS
+stage3-amd64-20170316.tar.bz2: OK
+stage3-amd64-20170316.tar.bz2: FAILED
+sha512sum: stage3-amd64-20170316.tar.bz2.CONTENTS: No such file or directory
+stage3-amd64-20170316.tar.bz2.CONTENTS: FAILED open or read
+sha512sum: stage3-amd64-20170316.tar.bz2.CONTENTS: No such file or directory
+stage3-amd64-20170316.tar.bz2.CONTENTS: FAILED open or read
 sha512sum: WARNING: 2 listed files could not be read
 sha512sum: WARNING: 1 computed checksum did NOT match
 ----
@@ -525,7 +484,7 @@ sha512sum: WARNING: 1 computed checksum did NOT match
 
 ダウンロードが完了したら、stage3を展開します。
 ----
-livecd gentoo # tar xvjpf stage3-amd64-20151225.tar.bz2
+livecd gentoo # tar xvf stage3-amd64-20170316.tar.bz2
 ...
 ./sbin/nologin
 ./sbin/ip6tables-restore
@@ -569,44 +528,44 @@ livecd gentoo # mount --rbind /dev dev/
 ----
 livecd gentoo # chroot /mnt/gentoo/ /bin/bash
 livecd / # source /etc/profile
-livecd / # export PS1=''(chroot) $PS1''
+livecd / # export PS1="(chroot) $PS1"
 ----
 
 まず下記コマンドでPortageを使用できるようにしましょう。
 ----
 (chroot) livecd / # emerge-webrsync
-!!! Section 'gentoo' in repos.conf has location attribute set to nonexistent directory: '/usr/portage'
 !!! Section 'x-portage' in repos.conf has location attribute set to nonexistent directory: '/usr/portage'
+!!! Section 'gentoo' in repos.conf has location attribute set to nonexistent directory: '/usr/portage'
 !!! Invalid Repository Location (not a dir): '/usr/portage'
 Fetching most recent snapshot ...
-Trying to retrieve 20151225 snapshot from http://distfiles.gentoo.org ...
-Fetching file portage-20151225.tar.xz.md5sum ...
-Fetching file portage-20151225.tar.xz.gpgsig ...
-Fetching file portage-20151225.tar.xz ...
+Trying to retrieve 20170403 snapshot from http://distfiles.gentoo.org ...
+Fetching file portage-20170403.tar.xz.md5sum ...
+Fetching file portage-20170403.tar.xz.gpgsig ...
+Fetching file portage-20170403.tar.xz ...
 Checking digest ...
 Getting snapshot timestamp ...
 Syncing local tree ...
 
-Number of files: 206,664 (reg: 179,479, dir: 27,185)
-Number of created files: 206,663 (reg: 179,479, dir: 27,184)
+Number of files: 204,885 (reg: 177,370, dir: 27,515)
+Number of created files: 204,884 (reg: 177,370, dir: 27,514)
 Number of deleted files: 0
-Number of regular files transferred: 179,479
-Total file size: 394.73M bytes
-Total transferred file size: 394.73M bytes
-Literal data: 394.73M bytes
+Number of regular files transferred: 177,370
+Total file size: 416.18M bytes
+Total transferred file size: 416.18M bytes
+Literal data: 416.18M bytes
 Matched data: 0 bytes
-File list size: 5.18M
-File list generation time: 0.001 seconds
+File list size: 4.52M
+File list generation time: 0.005 seconds
 File list transfer time: 0.000 seconds
-Total bytes sent: 175.63M
-Total bytes received: 3.54M
+Total bytes sent: 182.50M
+Total bytes received: 3.50M
 
-sent 175.63M bytes  received 3.54M bytes  114.45K bytes/sec
-total size is 394.73M  speedup is 2.20
+sent 182.50M bytes  received 3.50M bytes  1.61M bytes/sec
+total size is 416.18M  speedup is 2.24
 Cleaning up ...
 
-* IMPORTANT: 9 news items need reading for repository 'gentoo'.
-* Use eselect news read to view new items.
+ * IMPORTANT: 10 news items need reading for repository 'gentoo'.
+ * Use eselect news read to view new items.
 ----
 
 タイムゾーンを設定します。
@@ -674,8 +633,10 @@ Configuring pkg...
 These are the packages that would be merged, in order:
 
 Calculating dependencies... done!
-[ebuild  N     ] sys-devel/bc-1.06.95-r1  USE=''readline -libedit -static''
-[ebuild  N     ] sys-kernel/gentoo-sources-4.1.12  USE=''-build -experimental -kdbus -symlink''
+[ebuild  N     ] sys-devel/bc-1.06.95-r1::gentoo  USE="readline -libedit -static" 284 KiB
+[ebuild  N     ] sys-kernel/gentoo-sources-4.9.16:4.9.16::gentoo  USE="-build -experimental -symlink" 91,402 KiB
+
+Total: 2 packages (2 new), Size of downloads: 91,685 KiB
 
 Would you like to merge these packages? [Yes/No]
 ----
@@ -734,6 +695,18 @@ Portageにしか適用されないためです。
 ひな形があるので少し修正するだけです。
 ----
 nano -w /etc/fstab
+
+# NOTE: You can use full paths to devices like /dev/sda3, but it is often
+#       more reliable to use filesystem labels or UUIDs. See your filesystem
+#       documentation for details on setting a label. To obtain the UUID, use
+#       the blkid(8) command.
+
+#LABEL=boot             /boot           ext4            noauto,noatime  1 2
+#UUID=58e72203-57d1-4497-81ad-97655bd56494              /               ext4            noatime         0 1
+#LABEL=swap             none            swap            sw              0 0
+#/dev/cdrom             /mnt/cdrom      auto            noauto,ro       0 0
+
+
 # NOTE: If your BOOT partition is ReiserFS, add the notail option to opts.
 /dev/BOOT               /boot           ext2            noauto,noatime  1 2
 /dev/ROOT               /               ext3            noatime         0 1
@@ -742,16 +715,14 @@ nano -w /etc/fstab
 /dev/fd0                /mnt/floppy     auto            noauto          0 0
 ----
 BOOTをsda2に、ROOTをsda3に変更します。SWAPは作成していないのでコメントアウトします。
-フロッピーを使用しない場合(しませんよね？)fd0もコメントアウトします。
-/bootに記載されているnoautoオプションは削除するのがお勧めです。
-カーネル更新時にマウントし忘れてトラブルになるのを防ぎます。
+カーネル更新時にマウントし忘れてトラブルになった事があるので、
+/bootに記載されているnoautoオプションは削除しています。
 ----
 # NOTE: If your BOOT partition is ReiserFS, add the notail option to opts.
 /dev/sda2               /boot           ext2            noatime  1 2
 /dev/sda3               /               ext4            noatime         0 1
-#/dev/SWAP              none            swap            sw              0 0
-/dev/cdrom              /mnt/cdrom      auto            noauto,ro       0 0
-#/dev/fd0                /mnt/floppy     auto            noauto          0 0
+#LABEL=swap             none            swap            sw              0 0
+#/dev/cdrom              /mnt/cdrom      auto            noauto,ro       0 0
 ----
 
 ホストネームの設定をしましょう。
@@ -768,6 +739,10 @@ This is \n.\0 (\s \m \r) \t
 ----
 This is \n (\s \m \r) \t
 ----
+
+
+？？未確認？？
+
 
 ネットワーク設定を行います。まずは下記を実行。
 ----
@@ -810,6 +785,11 @@ keymap=''jp106''
 
 ///etc/conf.d/hwclock
 
+
+？？未確認？？
+
+
+
 もろもろの基本アプリケーションをインストールします。
 ----
 (chroot) livecd / # emerge --ask app-admin/syslog-ng
@@ -830,12 +810,12 @@ keymap=''jp106''
 ブートするカーネルを設定しています。
 ----
 (chroot) livecd / # emerge --ask sys-boot/grub
-(chroot) livecd / # grub2-install /dev/sda
+(chroot) livecd / # grub-install /dev/sda
 Installing for i386-pc platform.
 Installation finished. No error reported.
-(chroot) livecd / # grub2-mkconfig -o /boot/grub/grub.cfg
+(chroot) livecd / # grub-mkconfig -o /boot/grub/grub.cfg
 Generating grub configuration file ...
-Linux イメージを見つけました: /boot/vmlinuz-4.1.12-gentoo
+Linux イメージを見つけました: /boot/vmlinuz-4.9.16-gentoo
 完了
 ----
 
@@ -850,6 +830,9 @@ Linux イメージを見つけました: /boot/vmlinuz-4.1.12-gentoo
 # umount /mnt/gentoo/{proc,boot,gentoo}
 ----
 //livecd ~ # umount -l /mnt/gentoo/dev{/shm,/pts,}
+
+?? gentoo/gentoo ??
+
 
 最後にrebootします。次はインストールした環境で起動するはずです。
 
